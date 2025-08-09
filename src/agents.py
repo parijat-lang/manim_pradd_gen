@@ -47,7 +47,8 @@ class BaseAgent:
         Runs the agent for a given task.
         1. Constructs a full prompt including the corpus state.
         2. Calls the LLM to get a JSON string of arguments.
-        3. Executes the agent's designated tool with these arguments.
+        3. Extracts and parses the JSON from the potentially messy response.
+        4. Executes the agent's designated tool with these arguments.
         """
         print(f"\n--- Running Agent: {self.agent_name} ---")
 
@@ -57,11 +58,23 @@ class BaseAgent:
             raise NotImplementedError(f"Agent {self.agent_name} must have a tool_name defined.")
 
         try:
-            # 1. Get the JSON arguments string from the LLM
+            # 1. Get the raw response string from the LLM
             llm_response_str = get_llm_tool_call(self.system_prompt, full_user_prompt)
 
-            # 2. Parse the JSON string into a Python dictionary
-            args = json.loads(llm_response_str)
+            # 2. Clean the string to extract the JSON object
+            try:
+                # Find the first '{' and the last '}' to extract the JSON part
+                start_index = llm_response_str.find('{')
+                end_index = llm_response_str.rfind('}')
+                if start_index != -1 and end_index != -1 and end_index > start_index:
+                    json_str = llm_response_str[start_index:end_index+1]
+                    args = json.loads(json_str)
+                else:
+                    raise json.JSONDecodeError("No valid JSON object found in response.", llm_response_str, 0)
+            except json.JSONDecodeError as e:
+                print(f"ERROR in agent '{self.agent_name}': Failed to decode LLM response as JSON.")
+                print(f"Original response was:\n{llm_response_str}")
+                raise e # Re-raise the exception to be caught by the outer block
 
             # 3. Get the tool function from the tools module
             tool_function = getattr(tools, self.tool_name)
@@ -71,12 +84,8 @@ class BaseAgent:
             print(f"Agent {self.agent_name} finished successfully.")
             return result
 
-        except json.JSONDecodeError as e:
-            error_message = f"ERROR in agent '{self.agent_name}': Failed to decode LLM response as JSON. Response was:\n{llm_response_str}"
-            print(error_message)
-            raise
         except Exception as e:
-            error_message = f"ERROR in agent '{self.agent_name}': {e}"
+            error_message = f"ERROR in agent '{self.agent_name}': An exception occurred: {e}"
             print(error_message)
             raise
 

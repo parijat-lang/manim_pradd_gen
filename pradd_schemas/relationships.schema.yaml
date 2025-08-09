@@ -1,0 +1,17 @@
+type: object
+required: [relationships]
+properties:
+  relationships:
+    type: array
+    items:
+      type: object
+      required: [rel_id, beat_id, pattern, spec]
+      properties:
+        rel_id: { type: string, pattern: '^R-\\d{4}$' }
+        beat_id: { type: string, pattern: '^B-\\d{3}$' }
+        pattern:
+          type: string
+          enum: [always_redraw, updater, tracker_binding]
+        spec:
+          type: object
+          additionalProperties: true

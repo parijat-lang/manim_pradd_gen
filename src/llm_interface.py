@@ -4,18 +4,19 @@ import json
 
 # --- Configuration ---
 # Users can override these defaults by setting environment variables.
-# This example is for Ollama's chat API.
-# For LM Studio, the endpoint might be "http://localhost:1234/v1/chat/completions"
-LLM_API_ENDPOINT = os.getenv("LLM_API_ENDPOINT", "http://localhost:11434/api/chat")
-LLM_MODEL = os.getenv("LLM_MODEL", "llama3")  # The model to use, e.g., "llama3", "mistral"
+# Default is now for LM Studio, as requested.
+# For Ollama, the endpoint is typically "http://localhost:11434/api/chat"
+LLM_API_ENDPOINT = os.getenv("LLM_API_ENDPOINT", "http://localhost:1234/v1/chat/completions")
+# For LM Studio, the model name is often the file name or a name set in the UI.
+# For the new OpenAI model, this might be 'gpt-oss-20b'.
+LLM_MODEL = os.getenv("LLM_MODEL", "gpt-oss-20b")
 
 def get_llm_tool_call(system_prompt: str, user_prompt: str) -> str:
     """
     Sends a prompt to the local LLM and expects a response formatted as a tool call.
 
-    This function is designed to work with local LLM servers like Ollama.
-    It sends a system prompt and a user prompt, and the LLM is expected to respond
-    with a JSON string that represents a function call with arguments.
+    This function is designed to work with OpenAI-compatible servers (like LM Studio)
+    and falls back to handle Ollama's native format, making it flexible.
 
     Args:
         system_prompt: The system message that defines the agent's role and tools.
@@ -23,50 +24,60 @@ def get_llm_tool_call(system_prompt: str, user_prompt: str) -> str:
 
     Returns:
         A string containing the LLM's response, which should be a parsable JSON string
-        representing a tool call.
+        representing a tool call's arguments.
 
     Raises:
         requests.exceptions.RequestException: If the API call fails.
+        ValueError: If the response format is unrecognized or empty.
     """
-    headers = {"Content-Type": "application/json"}
+    # For OpenAI-compatible endpoints (like LM Studio), the API key is often not needed.
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {os.getenv('LLM_API_KEY', 'not-needed')}"
+    }
 
-    # This payload is for Ollama. You may need to adjust it for other servers.
-    # We request JSON output to make parsing the tool call reliable.
+    # Standard OpenAI-compatible payload
     payload = {
         "model": LLM_MODEL,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        "stream": False,
-        "format": "json",  # Request JSON output from Ollama
-        "options": {
-            "temperature": 0.0,  # For reproducibility
-        }
+        "temperature": 0.0,
+        "response_format": {"type": "json_object"} # Use standard JSON mode
     }
 
-    print(f"Sending request to LLM ({LLM_MODEL})...")
+    print(f"Sending request to LLM ({LLM_MODEL}) at {LLM_API_ENDPOINT}...")
 
     try:
         response = requests.post(LLM_API_ENDPOINT, headers=headers, data=json.dumps(payload))
-        response.raise_for_status()  # Raise an HTTPError for bad responses (4xx or 5xx)
-
-        # Ollama's response for a chat completion is nested.
-        # The 'content' is a JSON string that we need to return.
+        response.raise_for_status()
         response_data = response.json()
-        message_content_str = response_data.get("message", {}).get("content", "")
+
+        # Adaptive response parsing
+        message_content_str = ""
+        # 1. Try OpenAI / LM Studio format
+        if "choices" in response_data and response_data["choices"]:
+            message = response_data["choices"][0].get("message", {})
+            if message.get("content"):
+                message_content_str = message["content"]
+
+        # 2. Fallback to Ollama's native format
+        elif "message" in response_data and response_data["message"].get("content"):
+            message_content_str = response_data["message"]["content"]
 
         if not message_content_str:
-            raise ValueError("LLM returned an empty message content.")
+            raise ValueError("LLM response was empty or in an unrecognized format.")
 
-        return message_content_str
+        return message_content_str.strip()
 
     except requests.exceptions.RequestException as e:
         print(f"Error: Could not communicate with LLM API at {LLM_API_ENDPOINT}.")
-        print("Please ensure your local LLM server (e.g., Ollama) is running and accessible.")
+        print("Please ensure your local LLM server (e.g., LM Studio, Ollama) is running and the endpoint is correct.")
         raise
-    except json.JSONDecodeError:
-        print(f"Error: Failed to decode JSON from LLM response: {response.text}")
+    except (json.JSONDecodeError, KeyError, IndexError) as e:
+        print(f"Error: Failed to parse LLM response. Error: {e}")
+        print(f"Received response: {response.text}")
         raise
     except ValueError as e:
         print(f"Error: {e}")

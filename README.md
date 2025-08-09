@@ -41,30 +41,33 @@ pip install -r requirements.txt
 
 ## Configuration
 
-This system requires access to a running local LLM that is compatible with the OpenAI API format (like Ollama or LM Studio).
+This system requires access to a local LLM. It is configured by default to work with **LM Studio**.
 
-**1. Run a Local LLM:**
-Ensure your local LLM server is running. For example, with Ollama, you can run a model like Llama 3 with:
-```bash
-ollama run llama3
-```
+**1. Setup LM Studio:**
+- Download and install [LM Studio](https://lmstudio.ai/download).
+- In the LM Studio application, search for and download the `openai/gpt-oss-20b` model.
+- Load the model and navigate to the "Local Server" tab.
+- Click "Start Server". This will expose an OpenAI-compatible API endpoint.
 
-**2. Configure the API Endpoint:**
-The script connects to the LLM using an API endpoint defined by an environment variable. You must set this variable before running the application.
+**2. Configure Environment Variables:**
+The script connects to the LLM using an API endpoint and model name defined by environment variables. You must set these before running the application.
 
-- **For Ollama (default):**
+- **For LM Studio (Default):**
+  The code defaults to the standard LM Studio endpoint and the `gpt-oss-20b` model. If your setup is standard, you may not need to set these variables. However, it is best practice to set them explicitly:
+  ```bash
+  # The server address from the LM Studio "Local Server" tab
+  export LLM_API_ENDPOINT="http://localhost:1234/v1/chat/completions"
+
+  # The model identifier you see loaded in LM Studio
+  export LLM_MODEL="gpt-oss-20b"
+  ```
+
+- **For Ollama (Alternative):**
+  If you are using Ollama, you will need to override the default environment variables:
   ```bash
   export LLM_API_ENDPOINT="http://localhost:11434/api/chat"
+  export LLM_MODEL="llama3" # Or another model you have downloaded
   ```
-- **For LM Studio:** The endpoint is typically `http://localhost:1234/v1/chat/completions`.
-  ```bash
-  export LLM_API_ENDPOINT="http://localhost:1234/v1/chat/completions"
-  ```
-
-You can also specify the model you are using (the default is `llama3`):
-```bash
-export LLM_MODEL="your-model-name"
-```
 
 ## Usage
 

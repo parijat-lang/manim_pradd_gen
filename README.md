@@ -50,22 +50,22 @@ This system requires access to a local LLM. It is configured by default to work 
 - Click "Start Server". This will expose an OpenAI-compatible API endpoint.
 
 **2. Configure Environment Variables:**
-The script connects to the LLM using an API endpoint and model name defined by environment variables. You must set these before running the application.
+The script connects to the LLM using a base URL and model name defined by environment variables. You must set these before running the application.
 
 - **For LM Studio (Default):**
-  The code defaults to the standard LM Studio endpoint and the `gpt-oss-20b` model. If your setup is standard, you may not need to set these variables. However, it is best practice to set them explicitly:
+  The code defaults to the standard LM Studio server address and the `gpt-oss-20b` model. If your setup is standard, you may not need to set these variables. However, it is best practice to set them explicitly:
   ```bash
-  # The server address from the LM Studio "Local Server" tab
-  export LLM_API_ENDPOINT="http://localhost:1234/v1/chat/completions"
+  # The server address from the LM Studio "Local Server" tab, without the /chat/completions part.
+  export LLM_API_BASE_URL="http://localhost:1234/v1"
 
   # The model identifier you see loaded in LM Studio
   export LLM_MODEL="gpt-oss-20b"
   ```
 
 - **For Ollama (Alternative):**
-  If you are using Ollama, you will need to override the default environment variables:
+  If you are using Ollama, you will need to override the default environment variables. The `openai` library can also connect to Ollama's OpenAI-compatible endpoint.
   ```bash
-  export LLM_API_ENDPOINT="http://localhost:11434/api/chat"
+  export LLM_API_BASE_URL="http://localhost:11434/v1"
   export LLM_MODEL="llama3" # Or another model you have downloaded
   ```
 

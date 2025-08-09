@@ -20,6 +20,8 @@ The pipeline follows these phases:
 
 Each agent reads the current state of the `pradd_corpus/` directory, performs its task by calling a local LLM, and writes its output back to the corpus.
 
+> **Note on JSON Output:** This system relies on the LLM's ability to follow instructions to produce a valid JSON object as output. The agent prompts are designed to enforce this. The `response_format` parameter is not used in the API call to ensure compatibility with a wider range of local server versions.
+
 ## Setup Instructions
 
 **1. Clone the Repository:**

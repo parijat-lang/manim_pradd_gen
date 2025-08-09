@@ -48,8 +48,7 @@ def get_llm_tool_call(system_prompt: str, user_prompt: str) -> str:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.0,
-            response_format={"type": "json_object"}
+            temperature=0.0
         )
 
         message_content = result.choices[0].message.content

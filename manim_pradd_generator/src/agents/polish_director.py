@@ -39,7 +39,8 @@ def run(llm_client, context, polish_brief):
         return utils.parse_llm_response(
             response_message=response.choices[0].message,
             primary_tool_name="add_polish",
-            primary_tool_arg_keys=["polish"]
+            primary_tool_arg_keys=["polish"],
+            allow_empty_response=True
         )
 
     except Exception as e:

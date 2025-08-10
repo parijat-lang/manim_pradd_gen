@@ -41,7 +41,8 @@ def run(llm_client, context, dynamics_brief):
         return utils.parse_llm_response(
             response_message=response.choices[0].message,
             primary_tool_name="define_relationships",
-            primary_tool_arg_keys=["relationships"]
+            primary_tool_arg_keys=["relationships"],
+            allow_empty_response=True
         )
 
     except Exception as e:

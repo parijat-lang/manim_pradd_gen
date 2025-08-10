@@ -38,21 +38,23 @@ def get_openai_tool_schema(tool_name: str):
 
     return openai_schema
 
-def parse_llm_response(response_message, primary_tool_name, primary_tool_arg_keys):
+def parse_llm_response(response_message, primary_tool_name, primary_tool_arg_keys, allow_empty_response=False):
     """
-    Parses the LLM response, handling both formal tool calls and raw JSON output.
+    Parses the LLM response, handling formal tool calls, raw JSON, and valid empty responses.
 
     Args:
         response_message: The message object from the OpenAI API response.
         primary_tool_name: The name of the agent's main tool (e.g., 'write_beats').
         primary_tool_arg_keys: A list of top-level keys expected in the tool's args.
+        allow_empty_response: If True, an empty response is considered a valid "no-op".
 
     Returns:
-        A tuple of (tool_name, function_args).
+        A tuple of (tool_name, function_args). Returns (None, None) for a valid no-op.
     """
     import json
 
     tool_calls = response_message.tool_calls
+    llm_content = response_message.content
 
     if tool_calls:
         # Ideal case: A formal tool call was made.
@@ -61,27 +63,33 @@ def parse_llm_response(response_message, primary_tool_name, primary_tool_arg_key
         function_args = json.loads(tool_call.function.arguments)
         print(f"   LLM decided to call '{tool_name}'.")
         return tool_name, function_args
-    else:
-        # Fallback case: The LLM might have returned raw JSON in the content.
-        llm_content = response_message.content
-        print("   LLM did not make a formal tool call. Checking content for raw JSON...")
 
-        try:
-            # Clean up potential markdown code blocks
-            if llm_content.strip().startswith("```json"):
-                llm_content = llm_content.strip()[7:-3].strip()
+    # Check for empty response
+    if not llm_content or llm_content.strip() == "":
+        if allow_empty_response:
+            print("   LLM returned a valid empty response (no-op).")
+            return None, None
+        else:
+            print("   LLM returned an unexpected empty response.")
+            raise ValueError("LLM returned an empty response where output was required.")
 
-            potential_args = json.loads(llm_content)
+    # Fallback case: The LLM might have returned raw JSON in the content.
+    print("   LLM did not make a formal tool call. Checking content for raw JSON...")
+    try:
+        # Clean up potential markdown code blocks
+        if llm_content.strip().startswith("```json"):
+            llm_content = llm_content.strip()[7:-3].strip()
 
-            # Heuristic check: does this JSON look like our tool's arguments?
-            if isinstance(potential_args, dict) and all(key in potential_args for key in primary_tool_arg_keys):
-                print(f"   LLM returned raw JSON matching the structure for '{primary_tool_name}'.")
-                return primary_tool_name, potential_args
-            else:
-                # It's JSON, but not what we expected.
-                print(f"LLM returned unexpected JSON content:\n{llm_content}")
-                raise ValueError("LLM returned JSON that does not match expected tool arguments.")
-        except (json.JSONDecodeError, TypeError):
-            # It's not valid JSON, it's just prose.
-            print(f"LLM did not call a tool or return valid JSON. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call a tool or return tool arguments as JSON, but did not.")
+        potential_args = json.loads(llm_content)
+
+        # Heuristic check: does this JSON look like our tool's arguments?
+        if isinstance(potential_args, dict) and all(key in potential_args for key in primary_tool_arg_keys):
+            print(f"   LLM returned raw JSON matching the structure for '{primary_tool_name}'.")
+            return primary_tool_name, potential_args
+        else:
+            print(f"LLM returned unexpected JSON content:\n{llm_content}")
+            raise ValueError("LLM returned JSON that does not match expected tool arguments.")
+    except (json.JSONDecodeError, TypeError):
+        # It's not valid JSON, it's just prose.
+        print(f"LLM did not call a tool or return valid JSON. Response content:\n{llm_content}")
+        raise ValueError("LLM was expected to call a tool or return tool arguments as JSON, but did not.")

@@ -42,7 +42,8 @@ def run(llm_client, context, animation_brief):
         return utils.parse_llm_response(
             response_message=response.choices[0].message,
             primary_tool_name="design_animations",
-            primary_tool_arg_keys=["animations"]
+            primary_tool_arg_keys=["animations"],
+            allow_empty_response=True
         )
 
     except Exception as e:

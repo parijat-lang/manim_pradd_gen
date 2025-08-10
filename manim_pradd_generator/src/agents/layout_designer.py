@@ -45,7 +45,8 @@ def run(llm_client, context, layout_goals):
         return utils.parse_llm_response(
             response_message=response.choices[0].message,
             primary_tool_name="plan_geometry",
-            primary_tool_arg_keys=["frames"]
+            primary_tool_arg_keys=["frames"],
+            allow_empty_response=True
         )
 
     except Exception as e:

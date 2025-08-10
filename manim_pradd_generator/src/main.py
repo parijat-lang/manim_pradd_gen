@@ -125,7 +125,19 @@ class Orchestrator:
                 scene_context['phase']['scene_id'] = scene_id
 
                 # Run agent for the specific scene
-                tool_name, params = agent_runner(self.llm_client, scene_context, brief)
+                t_name, params = agent_runner(self.llm_client, scene_context, brief)
+
+                if t_name is None and params is None:
+                    # This was a valid no-op, continue to the next scene
+                    print(f"   Agent decided no action was needed for scene {scene_id}. Skipping.")
+                    continue
+
+                # Assume all shards that don't no-op use the same tool
+                if not tool_name:
+                    tool_name = t_name
+                elif tool_name != t_name:
+                    print(f"Warning: Inconsistent tool names returned in sharded phase '{phase_name}'. Using first tool '{tool_name}'.")
+
                 all_tool_params.append(params)
 
             # Merge results
@@ -138,8 +150,10 @@ class Orchestrator:
             merged_params = copy.deepcopy(first_item)
             for key in merged_params:
                 if isinstance(merged_params[key], list):
-                    for i in range(1, len(all_tool_params)):
-                        merged_params[key].extend(all_tool_params[i][key])
+                    # Find all other responses for this tool and merge their list-based params
+                    for other_params in all_tool_params[1:]:
+                        if key in other_params and isinstance(other_params[key], list):
+                            merged_params[key].extend(other_params[key])
 
             self._execute_tool_call(tool_name, merged_params)
 
@@ -151,12 +165,18 @@ class Orchestrator:
                  tool_name, params, validation_result = agent_runner(self.context, brief)
                  if validation_result['status'] == 'failure':
                     print("!!! VALIDATION FAILED. Halting pipeline. !!!")
+                    # In a real scenario, would trigger conflict resolution here.
                     exit(1)
                  else:
                     print("Validation successful.")
-            else:
-                tool_name, params = agent_runner(self.llm_client, self.context, brief)
-                self._execute_tool_call(tool_name, params)
+                 return # Don't execute a tool call for the critic
+
+            tool_name, params = agent_runner(self.llm_client, self.context, brief)
+            if tool_name is None and params is None:
+                print(f"   Agent decided no action was needed for phase '{phase_name}'. Skipping.")
+                return
+
+            self._execute_tool_call(tool_name, params)
 
 
     def run_pipeline(self):

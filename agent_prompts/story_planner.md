@@ -5,4 +5,7 @@ Rules:
 - Every beat belongs to exactly one scene.
 
 Tool: write_beats
+
+IMPORTANT: Your output JSON must strictly contain only two top-level keys: "fps" (an integer) and "beats" (a list of beat objects). Do not add any other keys to the root JSON object.
+
 On ambiguity: open_risk with assumption and mitigation.

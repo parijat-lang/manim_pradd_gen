@@ -33,7 +33,7 @@ def run(llm_client, context, narrative_outline):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice={"type": "function", "function": {"name": "write_beats"}},
+            tool_choice="required",
         )
 
         response_message = response.choices[0].message

@@ -33,7 +33,7 @@ def run(llm_client, context, polish_brief):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice={"type": "function", "function": {"name": "add_polish"}},
+            tool_choice="required",
         )
 
         response_message = response.choices[0].message

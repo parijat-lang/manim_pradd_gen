@@ -35,7 +35,7 @@ def run(llm_client, context, layout_goals):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice={"type": "function", "function": {"name": "plan_geometry"}},
+            tool_choice="required",
         )
 
         response_message = response.choices[0].message

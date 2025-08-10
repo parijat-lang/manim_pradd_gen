@@ -33,7 +33,7 @@ def run(llm_client, context, render_constraints):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice={"type": "function", "function": {"name": "set_render_strategy"}},
+            tool_choice="required",
         )
 
         response_message = response.choices[0].message

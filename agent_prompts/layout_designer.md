@@ -11,7 +11,7 @@ The value of "frames" must be a list of frame objects. Each frame object must ad
 - `beat_id` (string): The ID of the beat this frame belongs to (e.g., "B-001").
 - `placements` (list): A list of object placement objects.
   - Each placement object must have the following keys:
-    - `object_id` (string): The ID of the object being placed (e.g., "O-0001").
+    - `object_id` (string): The ID of the object being placed. This MUST be in the format "O-XXXX" with four digits, referencing an ID from `objects.json`.
     - `position` (object): An object with the following keys:
       - `x` (number): The x-coordinate.
       - `y` (number): The y-coordinate.

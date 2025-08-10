@@ -10,7 +10,7 @@ The value of "relationships" must be a list of relationship objects. Each object
 - `rel_id` (string): The ID for this relationship (e.g., "R-0001").
 - `beat_id` (string): The ID of the beat this relationship belongs to (e.g., "B-001").
 - `pattern` (string): The type of relationship. Must be one of: "always_redraw", "updater", "tracker_binding".
-- `spec` (object): An object containing the specific details of the relationship. The contents will vary based on the pattern.
+- `spec` (object): An object containing the specific details of the relationship. The contents will vary based on the pattern. **Crucially, any value in this object that refers to another object MUST use its formal ID (e.g., "O-0010").**
 
 Validation:
 - No cyclic dependencies. Every tracker has a driver animation or initial. Flag heavy always_redraw.

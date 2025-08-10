@@ -15,7 +15,7 @@ Your output must be a single JSON object with two top-level keys: "timeline" and
         *   `t_start` (number): Absolute start time in seconds.
         *   `t_end` (number): Absolute end time in seconds.
         *   `mode` (string): "parallel" or "serial".
-        *   `items` (list of strings): IDs of animations, relationships, or camera cues (A-####, R-####, C-####).
+        *   `items` (list of strings): IDs of animations, relationships, or camera cues (A-####, R-####, C-####). **IMPORTANT: You must only use IDs that have been defined in the `animations.json`, `relationships.json`, or your own generated `camera.json` files. Do not invent new IDs.**
 
 2.  The `camera` key must contain a list of camera cue objects. Each object must have:
     *   `cam_id` (string): The ID for this camera cue (e.g., "C-0001").

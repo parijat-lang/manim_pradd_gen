@@ -8,7 +8,7 @@ The "objects" key must contain a list of object definitions. Each object definit
 - `name` (string): A human-readable name for the object (e.g., "Main Title Text").
 - `type` (string): The Manim object type. Must be one of: "Text", "MathTex", "VMobject", "SVGMobject", "ImageMobject", "Axes", "NumberPlane", "Graph", "Other".
 - `tags` (list of strings): A list of tags for categorization.
-- `beats_used_in` (list of strings): A list of beat IDs (e.g., "B-010", "B-020") where this object appears.
+- `beats_used_in` (list of strings): A list of beat IDs where this object appears. You MUST use the exact `beat_id` values from the `beats.json` file provided in the CONTEXT section.
 - `properties` (object): An object containing style properties that reference tokens from the North Star/Glossary (e.g., `{"color": "brand.primary"}`).
 
 Example of a valid object definition:

@@ -8,10 +8,10 @@ Tool: plan_geometry
 
 Your output must be a single JSON object with one top-level key: "frames".
 The value of "frames" must be a list of frame objects. Each frame object must adhere to the following schema:
-- `beat_id` (string): The ID of the beat this frame belongs to (e.g., "B-001").
+- `beat_id` (string): The ID of the beat this frame belongs to. You MUST use an ID from the `beats.json` file in the CONTEXT.
 - `placements` (list): A list of object placement objects.
   - Each placement object must have the following keys:
-    - `object_id` (string): The ID of the object being placed. This MUST be in the format "O-XXXX" with four digits, referencing an ID from `objects.json`.
+    - `object_id` (string): The ID of the object being placed. You MUST use an ID from the `objects.json` file in the CONTEXT.
     - `position` (object): An object with the following keys:
       - `x` (number): The x-coordinate.
       - `y` (number): The y-coordinate.

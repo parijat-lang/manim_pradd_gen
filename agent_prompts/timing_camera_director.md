@@ -10,16 +10,16 @@ Tool: compose_timeline
 Your output must be a single JSON object with two top-level keys: "timeline" and "camera".
 
 1.  The `timeline` key must contain a list of scene timeline objects. Each object must have:
-    *   `scene_id` (string): The ID of the scene.
+    *   `scene_id` (string): The ID of the scene. You MUST use a `scene_id` from the `beats.json` file in the CONTEXT.
     *   `entries` (list): A list of timeline entries. Each entry must have:
         *   `t_start` (number): Absolute start time in seconds.
         *   `t_end` (number): Absolute end time in seconds.
         *   `mode` (string): "parallel" or "serial".
-        *   `items` (list of strings): IDs of animations, relationships, or camera cues (A-####, R-####, C-####). **IMPORTANT: You must only use IDs that have been defined in the `animations.json`, `relationships.json`, or your own generated `camera.json` files. Do not invent new IDs.**
+        *   `items` (list of strings): IDs of animations, relationships, or camera cues. **You MUST only use IDs that are defined in the `animations.json`, `relationships.json`, or your own generated `camera` cues. Do not invent new IDs.**
 
 2.  The `camera` key must contain a list of camera cue objects. Each object must have:
     *   `cam_id` (string): The ID for this camera cue (e.g., "C-0001").
-    *   `scene_id` (string): The scene this cue belongs to.
+    *   `scene_id` (string): The scene this cue belongs to. You MUST use a `scene_id` from the `beats.json` file in the CONTEXT.
     *   `action` (string): The camera action to perform.
     *   `params` (object): Parameters for the action.
     *   `t_start` (number): Absolute start time in seconds.

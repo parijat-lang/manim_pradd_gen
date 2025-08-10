@@ -8,7 +8,7 @@ The value of "strategy" must be an object adhering to the following schema:
 - `renderer` (string): "cairo" or "opengl".
 - `quality` (string): "ql" (low), "qm" (medium), or "qh" (high).
 - `sections` (list of objects): Optional list of sections to render. Each object has:
-  - `scene_id` (string): The ID of the scene, which MUST be in the format "S-XXX".
+  - `scene_id` (string): The ID of the scene. You MUST use a `scene_id` from the `beats.json` file in the CONTEXT.
   - `start` (number)
   - `end` (number)
 - `previews` (list of objects): List of previews to generate. Each object has:

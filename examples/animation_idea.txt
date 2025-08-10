@@ -1,7 +1,0 @@
-Create a short, 15-second video explaining the Pythagorean theorem.
-
-The video should start by showing a right-angled triangle with sides labeled 'a', 'b', and 'c'.
-Then, show squares being drawn on each side.
-The squares on sides 'a' and 'b' should then animate and rearrange themselves to perfectly fit inside the square on side 'c'.
-Finally, display the formula a^2 + b^2 = c^2 on the screen.
-The tone should be educational and clear. Use a simple, clean color palette. Target audience is middle school students. Total runtime should be around 15 seconds. FPS should be 30.

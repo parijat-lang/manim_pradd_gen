@@ -1,0 +1,16 @@
+{
+  "camera": [
+    {
+      "cam_id": "C-0001",
+      "scene_id": "S-0001",
+      "action": "set_euler_angles",
+      "params": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "t_start": 0,
+      "t_end": 15
+    }
+  ]
+}

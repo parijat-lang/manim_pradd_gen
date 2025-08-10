@@ -1,0 +1,72 @@
+{
+  "relationships": [
+    {
+      "rel_id": "R-0001",
+      "beat_id": "B-001",
+      "pattern": "always_redraw",
+      "spec": {
+        "elements": [
+          "triangle_right_angled",
+          "square_a",
+          "square_b",
+          "square_c"
+        ]
+      }
+    },
+    {
+      "rel_id": "R-0002",
+      "beat_id": "B-001",
+      "pattern": "updater",
+      "spec": {
+        "element": "square_a",
+        "property": "position",
+        "driver": {
+          "type": "linear",
+          "start_frame": 0,
+          "end_frame": 150,
+          "from": {
+            "x": 100,
+            "y": 300
+          },
+          "to": {
+            "x": 200,
+            "y": 200
+          }
+        }
+      }
+    },
+    {
+      "rel_id": "R-0003",
+      "beat_id": "B-001",
+      "pattern": "updater",
+      "spec": {
+        "element": "square_b",
+        "property": "position",
+        "driver": {
+          "type": "linear",
+          "start_frame": 150,
+          "end_frame": 300,
+          "from": {
+            "x": 400,
+            "y": 300
+          },
+          "to": {
+            "x": 200,
+            "y": 200
+          }
+        }
+      }
+    },
+    {
+      "rel_id": "R-0004",
+      "beat_id": "B-001",
+      "pattern": "always_redraw",
+      "spec": {
+        "elements": [
+          "formula_text"
+        ],
+        "display_start_frame": 300
+      }
+    }
+  ]
+}

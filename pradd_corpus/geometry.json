@@ -1,0 +1,156 @@
+{
+  "frames": [
+    {
+      "beat_id": "B-001",
+      "placements": [
+        {
+          "object_id": "O-TRIANGLE",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 1,
+          "group": "grp_triangle"
+        }
+      ]
+    },
+    {
+      "beat_id": "B-002",
+      "placements": [
+        {
+          "object_id": "O-TRIANGLE",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 1,
+          "group": "grp_triangle"
+        },
+        {
+          "object_id": "O-SQUARE-A",
+          "position": {
+            "x": 0,
+            "y": -1.5,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 2,
+          "group": "grp_squares"
+        },
+        {
+          "object_id": "O-SQUARE-B",
+          "position": {
+            "x": -1.5,
+            "y": 0,
+            "scale": 1.0,
+            "rotation": 1.57079632679
+          },
+          "z": 2,
+          "group": "grp_squares"
+        },
+        {
+          "object_id": "O-SQUARE-C",
+          "position": {
+            "x": 0.75,
+            "y": 0.75,
+            "scale": 1.0,
+            "rotation": 0.78539816339
+          },
+          "z": 2,
+          "group": "grp_squares"
+        }
+      ]
+    },
+    {
+      "beat_id": "B-003",
+      "placements": [
+        {
+          "object_id": "O-TRIANGLE",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 1,
+          "group": "grp_triangle"
+        },
+        {
+          "object_id": "O-SQUARE-C",
+          "position": {
+            "x": 0.75,
+            "y": 0.75,
+            "scale": 1.0,
+            "rotation": 0.78539816339
+          },
+          "z": 2,
+          "group": "grp_squares"
+        },
+        {
+          "object_id": "O-SQUARE-A",
+          "position": {
+            "x": 0.75,
+            "y": 0.75,
+            "scale": 0.5,
+            "rotation": 0
+          },
+          "z": 2,
+          "group": "grp_squares"
+        },
+        {
+          "object_id": "O-SQUARE-B",
+          "position": {
+            "x": 0.75,
+            "y": 0.75,
+            "scale": 0.5,
+            "rotation": 1.57079632679
+          },
+          "z": 2,
+          "group": "grp_squares"
+        }
+      ]
+    },
+    {
+      "beat_id": "B-004",
+      "placements": [
+        {
+          "object_id": "O-TRIANGLE",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 1,
+          "group": "grp_triangle"
+        },
+        {
+          "object_id": "O-SQUARE-C",
+          "position": {
+            "x": 0.75,
+            "y": 0.75,
+            "scale": 1.0,
+            "rotation": 0.78539816339
+          },
+          "z": 2,
+          "group": "grp_squares"
+        },
+        {
+          "object_id": "O-FORMULA",
+          "position": {
+            "x": 0,
+            "y": -2.5,
+            "scale": 1.0,
+            "rotation": 0
+          },
+          "z": 3,
+          "group": "grp_formula"
+        }
+      ]
+    }
+  ]
+}

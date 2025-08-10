@@ -1,0 +1,25 @@
+{
+  "tokens": {
+    "colors": [
+      "brand.primary",
+      "brand.secondary",
+      "accent"
+    ],
+    "typography": [
+      "font.body",
+      "font.heading"
+    ],
+    "stroke_widths": [
+      "thin",
+      "medium"
+    ],
+    "spacing": [
+      "small",
+      "medium"
+    ],
+    "background": [
+      "bg.default"
+    ]
+  },
+  "terms": []
+}

@@ -1,0 +1,66 @@
+{
+  "polish": [
+    {
+      "type": "Indicate",
+      "target": "triangle",
+      "duration": 0.5,
+      "params": {
+        "color": "#FF0000",
+        "thickness": 4
+      }
+    },
+    {
+      "type": "Circumscribe",
+      "target": "triangle",
+      "duration": 0.5,
+      "params": {
+        "color": "#0000FF",
+        "thickness": 3
+      }
+    },
+    {
+      "type": "Flash",
+      "target": [
+        "square_a",
+        "square_b"
+      ],
+      "duration": 0.3,
+      "params": {
+        "color": "#00FF00",
+        "intensity": 0.8
+      }
+    },
+    {
+      "type": "Transition",
+      "target": [
+        "square_a",
+        "square_b"
+      ],
+      "duration": 2.0,
+      "params": {
+        "from": "original",
+        "to": "inside_square_c",
+        "easing": "easeInOutQuad"
+      }
+    },
+    {
+      "type": "Flash",
+      "target": "formula",
+      "duration": 0.3,
+      "params": {
+        "color": "#FFFF00",
+        "intensity": 0.9
+      }
+    },
+    {
+      "type": "Accessibility",
+      "target": "all",
+      "duration": 0,
+      "params": {
+        "contrastRatio": "7:1",
+        "fontSize": "24px",
+        "legibilityWindow": 15
+      }
+    }
+  ]
+}

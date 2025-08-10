@@ -1,0 +1,86 @@
+{
+  "objects": [
+    {
+      "stable_id": "obj_triangle",
+      "name": "Right-angled Triangle",
+      "manim_type": "Triangle",
+      "tags": [
+        "geometry",
+        "triangle"
+      ],
+      "beats_used_in": [
+        "beat_show_triangle"
+      ],
+      "properties": {
+        "color": "primary_color",
+        "stroke_width": 2
+      }
+    },
+    {
+      "stable_id": "obj_square_a",
+      "name": "Square on side a",
+      "manim_type": "Square",
+      "tags": [
+        "geometry",
+        "square"
+      ],
+      "beats_used_in": [
+        "beat_draw_squares",
+        "beat_animate_rearrange"
+      ],
+      "properties": {
+        "color": "secondary_color",
+        "stroke_width": 2
+      }
+    },
+    {
+      "stable_id": "obj_square_b",
+      "name": "Square on side b",
+      "manim_type": "Square",
+      "tags": [
+        "geometry",
+        "square"
+      ],
+      "beats_used_in": [
+        "beat_draw_squares",
+        "beat_animate_rearrange"
+      ],
+      "properties": {
+        "color": "secondary_color",
+        "stroke_width": 2
+      }
+    },
+    {
+      "stable_id": "obj_square_c",
+      "name": "Square on side c",
+      "manim_type": "Square",
+      "tags": [
+        "geometry",
+        "square"
+      ],
+      "beats_used_in": [
+        "beat_draw_squares"
+      ],
+      "properties": {
+        "color": "accent_color",
+        "stroke_width": 2
+      }
+    },
+    {
+      "stable_id": "obj_formula",
+      "name": "Pythagorean Formula",
+      "manim_type": "Tex",
+      "tags": [
+        "formula",
+        "text"
+      ],
+      "beats_used_in": [
+        "beat_display_formula"
+      ],
+      "properties": {
+        "color": "primary_color",
+        "font_size": 48
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "strategy": {
+    "renderer": "cairo",
+    "quality": "qm",
+    "sections": [
+      {
+        "scene_id": "pythagorean_video",
+        "start": 0,
+        "end": 15
+      }
+    ],
+    "previews": [
+      {
+        "scene_id": "pythagorean_video",
+        "start": 0,
+        "end": 9.999
+      }
+    ],
+    "cache": true
+  }
+}

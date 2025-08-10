@@ -1,0 +1,13 @@
+# Relationship
+rel_id: R-0003
+beat_id: B-010
+pattern: tracker_binding
+spec:
+  tracker_id: T-0001
+  initial: 0
+  animate_to: 6
+  run_time: 4
+  bindings:
+    - driver: T-0001
+      affects: O-0020
+      rule: dot_on_curve(x=T-0001, curve=O-0007)

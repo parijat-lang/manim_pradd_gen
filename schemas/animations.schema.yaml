@@ -1,0 +1,26 @@
+type: object
+required: [animations]
+properties:
+  animations:
+    type: array
+    items:
+      type: object
+      required: [anim_id, beat_id, kind, targets, params]
+      properties:
+        anim_id: { type: string, pattern: '^A-\\d{4}$' }
+        beat_id: { type: string, pattern: '^B-\\d{3}$' }
+        kind:
+          type: string
+          enum: [Create, Write, FadeIn, FadeOut, Transform, ReplacementTransform, Rotate, MoveAlongPath, GrowFromCenter, Indicate, Flash, Wiggle, Circumscribe, Custom]
+        targets: { type: array, items: { type: string, pattern: '^O-\\d{4}$' } }
+        params:
+          type: object
+          properties:
+            run_time: { type: number, minimum: 0.05 }
+            lag_ratio: { type: number, minimum: 0, maximum: 1 }
+            rate_func: { type: string }
+            path: { type: string, pattern: '^O-\\d{4}$' }
+            angle: { type: number }
+            to_state: { type: string }
+            notes: { type: string }
+          additionalProperties: true

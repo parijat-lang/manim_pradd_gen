@@ -1,0 +1,9 @@
+# Animation
+anim_id: A-0012
+beat_id: B-010
+kind: Transform
+targets: [O-0007]
+params:
+  to_state: O-0011
+  run_time: 2
+  rate_func: smooth

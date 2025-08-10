@@ -1,0 +1,9 @@
+# Object
+object_id: O-0007
+name: SineCurve
+type: VMobject
+tags: [function, plot]
+beats_used_in: [B-010]
+properties:
+  color: brand.primary
+  stroke_width: stroke.sm

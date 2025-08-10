@@ -1,0 +1,7 @@
+# Beat
+beat_id: B-010
+scene_id: S-001
+goal: Introduce sine vs cosine
+summary: Reveal axes, draw sine, morph to cosine
+success_criteria: [Viewer perceives phase shift]
+estimated_duration: 8

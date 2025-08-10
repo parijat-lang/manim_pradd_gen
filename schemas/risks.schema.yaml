@@ -1,0 +1,13 @@
+type: object
+required: [risks]
+properties:
+  risks:
+    type: array
+    items:
+      type: object
+      required: [title, risk_level, owner, mitigation]
+      properties:
+        title: { type: string }
+        risk_level: { type: string, enum: [low, medium, high] }
+        owner: { type: string }
+        mitigation: { type: string }

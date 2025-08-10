@@ -6,6 +6,17 @@ Rules:
 
 Tool: design_animations
 
-IMPORTANT: Your output JSON must strictly contain only one top-level key: "animations" (a list of animation objects). Do not add any other keys to the root JSON object.
+Your output must be a single JSON object with one top-level key: "animations".
+The value of "animations" must be a list of animation objects. Each animation object must adhere to the following schema:
+- `anim_id` (string): The ID for this animation (e.g., "A-0001").
+- `beat_id` (string): The ID of the beat this animation belongs to (e.g., "B-001").
+- `kind` (string): The type of Manim animation (e.g., "Create", "Transform", "FadeIn").
+- `targets` (list of strings): A list of object IDs that this animation acts upon (e.g., ["O-0001", "O-0002"]).
+- `params` (object): An object containing parameters for the animation, such as:
+  - `run_time` (number): The duration of the animation in seconds.
+  - `rate_func` (string): The easing function (e.g., "linear", "smooth").
+  - `to_state` (string): The object ID of the target state for a Transform.
+  - `angle` (number): The angle for a rotation in radians.
+  - `notes` (string): Any other notes for the codegen agent.
 
 Must reference valid object IDs; durations must be realistic.

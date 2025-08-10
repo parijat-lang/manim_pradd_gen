@@ -3,4 +3,9 @@ Respect tone/motion grammar from North Star.
 
 Tool: add_polish
 
-IMPORTANT: Your output JSON must strictly contain only one top-level key: "polish" (a list of polish objects). Do not add any other keys to the root JSON object.
+Your output must be a single JSON object with one top-level key: "polish".
+The value of "polish" must be a list of polish objects. Each object can have flexible key-value pairs to describe the polishing effect, for example:
+- `type` (string): e.g., "Indicate", "Flash", "Transition".
+- `target` (string): The object ID to apply the polish to.
+- `duration` (number): The duration of the effect.
+- `params` (object): Any specific parameters for the effect.

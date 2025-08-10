@@ -5,4 +5,7 @@ Rules:
 - Avoid overlapping z-order for unrelated items unless justified.
 
 Tool: plan_geometry
+
+IMPORTANT: Your output JSON must strictly contain only one top-level key: "frames" (a list of frame objects). Do not add any other keys to the root JSON object.
+
 If a referenced object is missing, open_risk and proceed with placeholders clearly marked.

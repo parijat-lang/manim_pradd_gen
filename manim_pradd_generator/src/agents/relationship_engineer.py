@@ -1,44 +1,59 @@
+import json
 from .. import prompts
+from .. import utils
 
-def run(context, dynamics_brief):
+def run(llm_client, context, dynamics_brief):
     """
-    Simulates the Relationship Engineer agent for a specific scene.
-
-    In a real implementation, this would use an LLM with the
-    RELATIONSHIP_ENGINEER_SYSTEM_PROMPT.
+    Runs the Relationship Engineer agent for a specific scene using an LLM.
     """
     scene_id = context['phase']['scene_id']
-    print(f"-> Running Relationship Engineer Agent for scene {scene_id}...")
+    print(f"-> Running Relationship Engineer Agent for scene {scene_id} (LLM)...")
 
-    # Mocked LLM response for S-001
-    if scene_id == "S-001":
-        mock_llm_response_params = {
-            "relationships": [
-                {
-                    "rel_id": "R-0001",
-                    "beat_id": "B-002",
-                    "pattern": "updater",
-                    "spec": {
-                        "description": "Keep the tangent line attached to the curve as a ValueTracker changes.",
-                        "target": "O-0004",
-                        "depends_on": ["O-0002", "T-0001"], # T-0001 would be a ValueTracker for x-position
-                        "update_function": "lambda mobj, dt: mobj.become(get_tangent_line_at(T-0001.get_value()))"
-                    }
-                },
-                {
-                  "rel_id": "R-0002",
-                  "beat_id": "B-003",
-                  "pattern": "always_redraw",
-                  "spec": {
-                      "description": "The area under the curve should redraw as its right boundary moves.",
-                      "target": "O-0003",
-                      "redraw_function": "lambda: get_area_under_curve(graph=O-0002, x_max=T-0002.get_value())"
-                  }
-                }
-            ]
-        }
-    else:
-        mock_llm_response_params = {"relationships": []}
+    system_prompt = prompts.RELATIONSHIP_ENGINEER_SYSTEM_PROMPT
 
-    print(f"   Relationship Engineer for scene {scene_id} decided to call 'define_relationships'.")
-    return "define_relationships", mock_llm_response_params
+    user_prompt = f"""
+    Here is the current context for the project:
+    {json.dumps(context, indent=2)}
+
+    Your task is to define the dynamic relationships (ValueTrackers, updaters, etc.)
+    for all beats within scene `{scene_id}` only.
+
+    Dynamics Brief: {dynamics_brief}
+
+    Call the `define_relationships` tool with the results for this scene.
+    """
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    tools = [utils.get_openai_tool_schema("define_relationships")]
+
+    try:
+        response = llm_client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=messages,
+            tools=tools,
+            tool_choice={"type": "function", "function": {"name": "define_relationships"}},
+        )
+
+        response_message = response.choices[0].message
+        tool_calls = response_message.tool_calls
+
+        if tool_calls:
+            tool_call = tool_calls[0]
+            if tool_call.function.name == "define_relationships":
+                print(f"   Relationship Engineer LLM for scene {scene_id} decided to call 'define_relationships'.")
+                function_args = json.loads(tool_call.function.arguments)
+                return "define_relationships", function_args
+            else:
+                raise ValueError(f"LLM called an unexpected tool: {tool_call.function.name}")
+        else:
+            llm_content = response_message.content
+            print(f"LLM did not call a tool. Response content:\n{llm_content}")
+            raise ValueError("LLM was expected to call 'define_relationships' but did not.")
+
+    except Exception as e:
+        print(f"An error occurred during the Relationship Engineer agent run for scene {scene_id}: {e}")
+        raise

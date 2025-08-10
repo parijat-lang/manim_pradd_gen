@@ -1,21 +1,25 @@
 # Manim PRADD Generator
 
-This repository contains a Python-based implementation of a stateless, multi-agent pipeline designed to generate a **Production-Ready Animation Design Document (PRADD)** for animations made with the [Manim Community Edition](https://www.manim.community/).
+# Manim PRADD Generator (Live LLM Version)
 
-The workflow is based on the detailed PRD provided, orchestrating a series of specialized agents to move from a high-level creative brief to a complete set of specification files ready for code generation.
+This repository contains a Python-based implementation of a stateless, multi-agent pipeline that uses a live Large Language Model (LLM) to generate a **Production-Ready Animation Design Document (PRADD)** for animations made with the [Manim Community Edition](https://www.manim.community/).
+
+The workflow orchestrates a series of specialized agents to move from a high-level creative brief to a complete set of specification files ready for code generation. This version has been refactored to use a live LLM (e.g., `openai/gpt-oss-20b`) hosted by **LM Studio**.
 
 ## Project Structure
 
 The repository is organized as follows:
 
--   `corpus/`: This directory is where all the output artifacts of the pipeline are stored. After a successful run, it will contain all the `.json` and `.md` files that constitute the PRADD. It is empty by default and gets populated when you run the main script.
--   `schemas/`: Contains the YAML definitions for all data structures used in the project, including the `context_capsule` and all data artifacts. These schemas define the contract for data passed between agents and tools.
+-   `corpus/`: This directory is where all the output artifacts of the pipeline are stored. After a successful run, it will contain all the `.json` and `.md` files that constitute the PRADD.
+-   `schemas/`: Contains the YAML definitions for all data structures used in the project.
 -   `src/`: The main source code for the agentic pipeline.
-    -   `agents/`: Contains the implementation for each specialized agent (e.g., `CreativeDirector`, `StoryPlanner`). These are currently implemented as mock runners that simulate an LLM's output.
+    -   `agents/`: Contains the implementation for each specialized agent. Each agent is now implemented to call a live LLM.
     -   `prompts.py`: Stores the detailed system prompts for each agent.
-    -   `tool_definitions.py`: Implements the set of tools (e.g., `write_beats`, `catalog_objects`) that agents can call to create and modify the corpus artifacts.
-    -   `main.py`: The orchestrator script that runs the entire pipeline from start to finish.
--   `requirements.txt`: A list of the Python dependencies required to run the project.
+    -   `tool_definitions.py`: Implements the set of tools that agents can call. Includes a functional `validate_corpus` tool.
+    -   `tool_schemas.py`: A data module storing the raw PRD-defined schemas for all tools.
+    -   `utils.py`: Contains utility functions, including the converter for PRD schemas to the OpenAI tool-calling format.
+    -   `main.py`: The orchestrator script that initializes the LLM client and runs the entire pipeline.
+-   `requirements.txt`: A list of the Python dependencies, including `openai`.
 -   `.gitignore`: Standard Python gitignore file.
 -   `README.md`: This file.
 
@@ -24,11 +28,21 @@ The repository is organized as follows:
 ### 1. Prerequisites
 
 -   Python 3.8+
--   `pip` for installing packages
+-   **LM Studio**: You must have LM Studio installed. Download it from [lmstudio.ai](https://lmstudio.ai/).
+-   An LLM with tool-calling capabilities. This project is configured for `openai/gpt-oss-20b`.
 
-### 2. Installation
+### 2. Set up LM Studio
 
-Clone the repository and install the required dependencies:
+1.  **Download the Model**: In LM Studio, search for and download the `openai/gpt-oss-20b` model.
+2.  **Start the Server**: Navigate to the "Server" tab (icon looks like `<-->`).
+3.  **Load the Model**: Select the `gpt-oss-20b` model you downloaded.
+4.  **Start Server**: Click the "Start Server" button. This will start a local server, typically at `http://localhost:1234`.
+
+**You must keep the LM Studio server running while you execute the Python pipeline.**
+
+### 3. Install Python Dependencies
+
+Clone this repository and install the required dependencies:
 
 ```bash
 git clone <repository-url>
@@ -36,7 +50,7 @@ cd manim_pradd_generator
 pip install -r requirements.txt
 ```
 
-### 3. Running the Pipeline
+### 4. Running the Live Pipeline
 
 To run the entire PRADD generation pipeline, execute the `main.py` script from the root directory of the project:
 
@@ -44,29 +58,10 @@ To run the entire PRADD generation pipeline, execute the `main.py` script from t
 python -m src.main
 ```
 
-You will see log messages in your console indicating which agent is running and which tools are being called.
+The script will first attempt to connect to the LM Studio server. If successful, it will begin running the agentic pipeline. You will see log messages in your console indicating which agent is running and that it is calling the LLM. The pipeline will make multiple network requests to your local server.
 
-### 4. Outputs
+### 5. Outputs
 
-After the script finishes, the `corpus/` directory will be populated with all the generated artifact files, such as:
-- `north_star.md`
-- `beats.json`
-- `objects.json`
-- `animations.json`
-- ...and all other files defined in the PRD.
+After the script finishes, the `corpus/` directory will be populated with all the generated artifact files (`north_star.md`, `beats.json`, etc.).
 
-Additionally, a final compiled `PRADD.md` will be created in the project's root directory. This file aggregates all the information from the corpus into a single, human-readable document.
-
-## Integrating with a Live LLM (e.g., LM Studio)
-
-This repository is set up with mock agent runners that simulate LLM responses. To connect this pipeline to a real LLM running via LM Studio, you would need to:
-
-1.  **Start the LM Studio Server**: Ensure your model is loaded and the local server is running.
-2.  **Modify Agent Runners**: Go into each agent file in `src/agents/`.
-3.  **Replace Mock Logic**: Replace the hardcoded `mock_llm_response_params` dictionary with actual calls to the LLM. You would use the `lmstudio` Python SDK to:
-    a.  Construct a prompt using the system prompt from `src.prompts` and the context/brief passed to the agent.
-    b.  Send the prompt to the LLM.
-    c.  Parse the LLM's response to extract the tool call name and its parameters.
-    d.  Return the extracted tool name and parameters, just as the mock implementation does now.
-
-This modular design allows you to easily plug in any LLM that supports a tool-calling or function-calling API.
+Additionally, a final compiled `PRADD.md` will be created in the project's root directory. This file aggregates all the information from the corpus into a single, human-readable document generated by the live agents.

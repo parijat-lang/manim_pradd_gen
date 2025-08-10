@@ -138,16 +138,59 @@ def open_risk(context, title, risk_level, owner, mitigation):
     print(f"Tool: opened new risk: {title}")
     return "Risk opened successfully."
 
+import jsonschema
+import yaml
+
+# --- Validation Logic ---
+
+def _load_schema(schema_name):
+    """Loads a YAML schema from the schemas directory."""
+    schema_path = Path(__file__).parent.parent / "schemas" / f"{schema_name}.schema.yaml"
+    with open(schema_path, 'r') as f:
+        return yaml.safe_load(f)
+
 def validate_corpus(context, strict=False):
     """Run cross-file checks; return errors/warnings."""
-    # This is a stub. A real implementation would use jsonschema and custom validation logic.
     print(f"Tool: running validation (strict={strict})...")
-    # Simulate finding no errors
     errors = []
     warnings = []
+    corpus = context["corpus_snapshot"]
+
+    # 1. JSON Schema validation for each artifact
+    for artifact_name, artifact_data in corpus.items():
+        if not artifact_data or artifact_name in ["north_star", "risks", "decisions", "glossary"]:
+            continue # Skip non-JSON or simple artifacts for now
+
+        try:
+            schema = _load_schema(artifact_name)
+            jsonschema.validate(instance=artifact_data, schema=schema)
+        except FileNotFoundError:
+            warnings.append(f"Schema not found for artifact: {artifact_name}. Skipping validation.")
+        except jsonschema.exceptions.ValidationError as e:
+            errors.append(f"Validation error in '{artifact_name}.json': {e.message} at path {list(e.path)}")
+        except Exception as e:
+            errors.append(f"An unexpected error occurred validating '{artifact_name}.json': {e}")
+
+    # 2. Cross-file validation
+    if not errors: # Only run if basic schema validation passes
+        # Example: Check if all object_ids in geometry exist in objects
+        if "objects" in corpus and "geometry" in corpus:
+            defined_object_ids = {obj["object_id"] for obj in corpus["objects"].get("objects", [])}
+            for frame in corpus["geometry"].get("frames", []):
+                for placement in frame.get("placements", []):
+                    if placement["object_id"] not in defined_object_ids:
+                        errors.append(f"Undefined object_id '{placement['object_id']}' used in geometry frame for beat '{frame['beat_id']}'.")
+
+        # Example: Check total duration against target
+        if "beats" in corpus and "project" in context:
+            total_duration = sum(b.get('estimated_duration', 0) for b in corpus["beats"].get("beats", []))
+            target_runtime = context["project"].get("target_runtime_s", 0)
+            if abs(total_duration - target_runtime) > (target_runtime * 0.10):
+                warnings.append(f"Total estimated duration ({total_duration}s) deviates more than 10% from target ({target_runtime}s).")
+
     if not errors:
         print("Validation successful.")
-        return {"status": "success", "errors": [], "warnings": []}
+        return {"status": "success", "errors": [], "warnings": warnings}
     else:
         print(f"Validation failed with {len(errors)} errors.")
         return {"status": "failure", "errors": errors, "warnings": warnings}

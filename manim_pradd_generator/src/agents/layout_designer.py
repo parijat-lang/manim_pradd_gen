@@ -1,53 +1,59 @@
+import json
 from .. import prompts
+from .. import utils
 
-def run(context, layout_goals):
+def run(llm_client, context, layout_goals):
     """
-    Simulates the Layout Designer agent for a specific scene.
-
-    In a real implementation, this would use an LLM with the
-    LAYOUT_DESIGNER_SYSTEM_PROMPT.
+    Runs the Layout Designer agent for a specific scene using an LLM.
     """
     scene_id = context['phase']['scene_id']
-    print(f"-> Running Layout Designer Agent for scene {scene_id}...")
+    print(f"-> Running Layout Designer Agent for scene {scene_id} (LLM)...")
 
-    # Filter objects from context that are used in the beats of this scene
-    # This is a simplified logic for the mock
-    beats_in_scene = [b['beat_id'] for b in context['corpus_snapshot']['beats']['beats'] if b['scene_id'] == scene_id]
+    system_prompt = prompts.LAYOUT_DESIGNER_SYSTEM_PROMPT
 
-    # Mocked LLM response for S-001
-    if scene_id == "S-001":
-        mock_llm_response_params = {
-            "frames": [
-                {
-                    "beat_id": "B-001",
-                    "placements": [
-                        {"object_id": "O-0001", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 0, "group": "grp_main_axes"},
-                        {"object_id": "O-0002", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 1, "group": "grp_main_axes"},
-                        {"object_id": "O-0003", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 2, "group": None}
-                    ]
-                },
-                {
-                    "beat_id": "B-002",
-                    "placements": [
-                        {"object_id": "O-0001", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 0, "group": "grp_main_axes"},
-                        {"object_id": "O-0002", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 1, "group": "grp_main_axes"},
-                        {"object_id": "O-0004", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 2, "group": None}
-                    ]
-                },
-                {
-                    "beat_id": "B-003",
-                    "placements": [
-                        {"object_id": "O-0001", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 0, "group": "grp_main_axes"},
-                        {"object_id": "O-0002", "position": {"x": 0, "y": 0, "scale": 1, "rotation": 0}, "z": 1, "group": "grp_main_axes"},
-                        {"object_id": "O-0005", "position": {"x": -4, "y": -2, "scale": 0.5, "rotation": 0}, "z": 2, "group": "grp_derivative_plot"}
-                    ]
-                }
-            ]
-        }
-    else:
-        # Default empty response for other scenes
-        mock_llm_response_params = {"frames": []}
+    user_prompt = f"""
+    Here is the current context for the project:
+    {json.dumps(context, indent=2)}
 
+    Your task is to plan the geometry (positions, scale, rotation, z-index, and groups)
+    for all objects within scene `{scene_id}` only.
 
-    print(f"   Layout Designer for scene {scene_id} decided to call 'plan_geometry'.")
-    return "plan_geometry", mock_llm_response_params
+    Layout Goals: {layout_goals}
+
+    Call the `plan_geometry` tool with the results for this scene.
+    """
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    tools = [utils.get_openai_tool_schema("plan_geometry")]
+
+    try:
+        response = llm_client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=messages,
+            tools=tools,
+            tool_choice={"type": "function", "function": {"name": "plan_geometry"}},
+        )
+
+        response_message = response.choices[0].message
+        tool_calls = response_message.tool_calls
+
+        if tool_calls:
+            tool_call = tool_calls[0]
+            if tool_call.function.name == "plan_geometry":
+                print(f"   Layout Designer LLM for scene {scene_id} decided to call 'plan_geometry'.")
+                function_args = json.loads(tool_call.function.arguments)
+                return "plan_geometry", function_args
+            else:
+                raise ValueError(f"LLM called an unexpected tool: {tool_call.function.name}")
+        else:
+            llm_content = response_message.content
+            print(f"LLM did not call a tool. Response content:\n{llm_content}")
+            raise ValueError("LLM was expected to call 'plan_geometry' but did not.")
+
+    except Exception as e:
+        print(f"An error occurred during the Layout Designer agent run for scene {scene_id}: {e}")
+        raise

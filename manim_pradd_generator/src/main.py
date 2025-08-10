@@ -1,6 +1,7 @@
 import json
 import copy
 from pathlib import Path
+from openai import OpenAI
 
 from . import tool_definitions
 from .agents import (
@@ -60,6 +61,16 @@ class Orchestrator:
     def __init__(self, initial_context):
         self.context = initial_context
         self.tools = tool_definitions.ALL_TOOLS
+        try:
+            self.llm_client = OpenAI(base_url="http://localhost:1234/v1", api_key="not-needed")
+            # Check connection
+            self.llm_client.models.list()
+            print("Successfully connected to LM Studio server.")
+        except Exception as e:
+            print(f"Error connecting to LM Studio server: {e}")
+            print("Please ensure LM Studio is running and the server is enabled.")
+            self.llm_client = None
+
 
     def _update_corpus_snapshot(self):
         """Reloads all corpus files into the context snapshot."""
@@ -101,59 +112,59 @@ class Orchestrator:
 
         if is_sharded:
             # --- Sharded Phase ---
-            # Get all unique scene IDs from the beats file
             scene_ids = sorted(list(set(b['scene_id'] for b in self.context['corpus_snapshot']['beats'].get('beats', []))))
             if not scene_ids:
                 print(f"Warning: No scenes found to shard for phase '{phase_name}'. Skipping.")
                 return
 
-            # Store results from each shard
             all_tool_params = []
+            tool_name = "" # Assume all shards use the same tool
 
             for scene_id in scene_ids:
                 scene_context = copy.deepcopy(self.context)
                 scene_context['phase']['scene_id'] = scene_id
 
                 # Run agent for the specific scene
-                tool_name, params = agent_runner(scene_context, brief)
-
-                # In a real parallel system, results would be collected.
-                # Here, we just append them to be processed serially.
+                tool_name, params = agent_runner(self.llm_client, scene_context, brief)
                 all_tool_params.append(params)
 
-            # Merge results (simple concatenation for lists)
-            # This is a simplification. A real merge might be more complex.
+            # Merge results
+            if not tool_name or not all_tool_params:
+                print(f"Phase '{phase_name}' produced no tool calls. Skipping execution.")
+                return
+
             merged_params = {}
-            if all_tool_params:
-                first_item = all_tool_params[0]
-                merged_params = copy.deepcopy(first_item)
-                for key in merged_params:
-                    if isinstance(merged_params[key], list):
-                        for i in range(1, len(all_tool_params)):
-                            merged_params[key].extend(all_tool_params[i][key])
+            first_item = all_tool_params[0]
+            merged_params = copy.deepcopy(first_item)
+            for key in merged_params:
+                if isinstance(merged_params[key], list):
+                    for i in range(1, len(all_tool_params)):
+                        merged_params[key].extend(all_tool_params[i][key])
 
             self._execute_tool_call(tool_name, merged_params)
 
         else:
             # --- Non-Sharded Phase ---
             self.context["phase"]["scene_id"] = None
-            tool_name, params, *extra = agent_runner(self.context, brief)
-
-            # The critic agent returns the validation result directly
-            if tool_name == 'validate_corpus':
-                validation_result = extra[0]
-                if validation_result['status'] == 'failure':
+            # The critic agent is a special case that doesn't use the LLM
+            if agent_runner == consistency_critic.run:
+                 tool_name, params, validation_result = agent_runner(self.context, brief)
+                 if validation_result['status'] == 'failure':
                     print("!!! VALIDATION FAILED. Halting pipeline. !!!")
-                    # In a real scenario, would trigger conflict resolution here.
                     exit(1)
-                else:
+                 else:
                     print("Validation successful.")
             else:
+                tool_name, params = agent_runner(self.llm_client, self.context, brief)
                 self._execute_tool_call(tool_name, params)
 
 
     def run_pipeline(self):
         """Runs the full PRADD generation pipeline."""
+        if not self.llm_client:
+            print("LLM client not available. Cannot run pipeline.")
+            return
+
         print("--- Starting PRADD Generation Pipeline ---")
 
         # Phase 1: Creative Director
@@ -179,7 +190,7 @@ class Orchestrator:
         self.run_phase("Timing & Camera", timing_camera_director.run, "Timing brief", is_sharded=True)
 
         # Phase 8: First Strict Validation
-        self.run_phase("Validation", lambda ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")
+        self.run_phase("Validation", lambda client, ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")
 
         # Phase 9: Polish Director
         self.run_phase("Polish", polish_director.run, "Polish brief")
@@ -188,7 +199,7 @@ class Orchestrator:
         self.run_phase("Rendering Strategy", rendering_strategist.run, "Render constraints")
 
         # Phase 11: Final Strict Validation
-        self.run_phase("Validation", lambda ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")
+        self.run_phase("Validation", lambda client, ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")
 
         # Phase 12: Compile PRADD
         print("-> Compiling final PRADD.md...")
@@ -199,8 +210,10 @@ class Orchestrator:
 
 if __name__ == "__main__":
     # Clean corpus directory for a fresh run
-    for p in tool_definitions.CORPUS_DIR.glob("*"):
-        p.unlink()
+    corpus_path = Path(__file__).parent / ".." / "corpus"
+    if corpus_path.exists():
+        for p in corpus_path.glob("*"):
+            p.unlink()
 
     initial_ctx = get_initial_context()
     orchestrator = Orchestrator(initial_ctx)

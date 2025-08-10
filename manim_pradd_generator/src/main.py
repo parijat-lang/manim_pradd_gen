@@ -167,36 +167,53 @@ class Orchestrator:
 
         print("--- Starting PRADD Generation Pipeline ---")
 
+        # Define more detailed briefs for the agents
+        creative_brief = "Create a short, visually engaging explainer video about the Fundamental Theorem of Calculus, aimed at university students. The style should be clean, modern, and inspired by educational content like 3Blue1Brown."
+
+        narrative_outline = """
+        Act 1: The Concept of Area. Introduce a simple curve, f(x). Visually represent the concept of the area under the curve from a starting point 'a' to a variable point 'x'. Define this as the 'area function', A(x). Show how A(x) changes as x moves.
+        Act 2: The Concept of the Derivative. Briefly recap the derivative as the slope of a function. Show a tangent line to the f(x) curve and illustrate its slope at various points.
+        Act 3: The Connection. This is the core of the video. Show that the rate of change of the area function, A'(x), is exactly equal to the original function, f(x). Animate this by showing the area accumulating while simultaneously plotting its derivative, which should trace out the f(x) curve perfectly. Conclude by stating the theorem.
+        """
+
+        object_brief = "We will need axes, a function graph for f(x), a shaded area object, a tangent line, and text labels for 'f(x)', 'A(x)', the theorem itself."
+        layout_goals = "The main function graph should be centered. Text labels should appear in the corners and not obstruct the main action. The derivative plot in Act 3 can be shown on a secondary, smaller set of axes."
+        animation_brief = "Animations should be smooth. Use Create and Write for introductions. The key animation is the simultaneous drawing of the derivative of the area function while the area itself grows."
+        dynamics_brief = "The area object and the tangent line must be dynamically linked to the main function graph. A ValueTracker should control the position 'x' along the curve."
+        timing_brief = "Pace the video slowly, with pauses for key revelations. Act 1 should be ~30% of the runtime, Act 2 ~20%, and Act 3 ~50%."
+        polish_brief = "Add subtle glowing effects to highlight the connection in Act 3. Use smooth fade transitions between acts."
+        render_constraints = "Standard HD, 1080p, 60fps. Use a high-quality renderer."
+
         # Phase 1: Creative Director
-        self.run_phase("Creative Direction", creative_director.run, "A brief about calculus.")
+        self.run_phase("Creative Direction", creative_director.run, creative_brief)
 
         # Phase 2: Story Planner
-        self.run_phase("Story Planning", story_planner.run, "A narrative outline.")
+        self.run_phase("Story Planning", story_planner.run, narrative_outline)
 
         # Phase 3: Object Librarian
-        self.run_phase("Object Cataloging", object_librarian.run, "A list of required objects.")
+        self.run_phase("Object Cataloging", object_librarian.run, object_brief)
 
         # --- Sharded Phases Start Here ---
         # Phase 4: Layout Designer
-        self.run_phase("Layout Design", layout_designer.run, "Layout goals", is_sharded=True)
+        self.run_phase("Layout Design", layout_designer.run, layout_goals, is_sharded=True)
 
         # Phase 5: Animation Designer
-        self.run_phase("Animation Design", animation_designer.run, "Animation brief", is_sharded=True)
+        self.run_phase("Animation Design", animation_designer.run, animation_brief, is_sharded=True)
 
         # Phase 6: Relationship Engineer
-        self.run_phase("Relationship Engineering", relationship_engineer.run, "Dynamics brief", is_sharded=True)
+        self.run_phase("Relationship Engineering", relationship_engineer.run, dynamics_brief, is_sharded=True)
 
         # Phase 7: Timing & Camera Director
-        self.run_phase("Timing & Camera", timing_camera_director.run, "Timing brief", is_sharded=True)
+        self.run_phase("Timing & Camera", timing_camera_director.run, timing_brief, is_sharded=True)
 
         # Phase 8: First Strict Validation
         self.run_phase("Validation", lambda client, ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")
 
         # Phase 9: Polish Director
-        self.run_phase("Polish", polish_director.run, "Polish brief")
+        self.run_phase("Polish", polish_director.run, polish_brief)
 
         # Phase 10: Rendering Strategist
-        self.run_phase("Rendering Strategy", rendering_strategist.run, "Render constraints")
+        self.run_phase("Rendering Strategy", rendering_strategist.run, render_constraints)
 
         # Phase 11: Final Strict Validation
         self.run_phase("Validation", lambda client, ctx, brief: consistency_critic.run(ctx, brief, strict=True), "Policy")

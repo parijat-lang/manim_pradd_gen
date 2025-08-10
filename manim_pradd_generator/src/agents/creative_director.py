@@ -26,15 +26,18 @@ def run(llm_client, context, creative_brief, constraints_hint=""):
         {"role": "user", "content": user_prompt},
     ]
 
-    # This agent is only allowed to call one tool
-    tools = [utils.get_openai_tool_schema("register_north_star")]
+    # This agent can either register the north star or open a risk if the input is unclear.
+    tools = [
+        utils.get_openai_tool_schema("register_north_star"),
+        utils.get_openai_tool_schema("open_risk")
+    ]
 
     try:
         response = llm_client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice="required",
+            tool_choice="auto", # Let the model choose
         )
 
         response_message = response.choices[0].message
@@ -42,18 +45,14 @@ def run(llm_client, context, creative_brief, constraints_hint=""):
 
         if tool_calls:
             tool_call = tool_calls[0]
-            if tool_call.function.name == "register_north_star":
-                print("   Creative Director LLM decided to call 'register_north_star'.")
-                function_args = json.loads(tool_call.function.arguments)
-                return "register_north_star", function_args
-            else:
-                raise ValueError(f"LLM called an unexpected tool: {tool_call.function.name}")
+            tool_name = tool_call.function.name
+            print(f"   Creative Director LLM decided to call '{tool_name}'.")
+            function_args = json.loads(tool_call.function.arguments)
+            return tool_name, function_args
         else:
-            # If the model doesn't call a tool, maybe it just returns content.
-            # For this agent, we strictly expect a tool call.
             llm_content = response_message.content
             print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call 'register_north_star' but did not.")
+            raise ValueError("LLM was expected to call a tool but did not.")
 
     except Exception as e:
         print(f"An error occurred during the Creative Director agent run: {e}")

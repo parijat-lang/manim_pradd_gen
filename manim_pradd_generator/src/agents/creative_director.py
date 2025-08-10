@@ -18,7 +18,7 @@ def run(llm_client, context, creative_brief, constraints_hint=""):
     Creative Brief: {creative_brief}
     Constraints Hint: {constraints_hint}
 
-    Please call the `register_north_star` tool with the results.
+    Please call the `register_north_star` tool with the results, or `open_risk` if the brief is too ambiguous.
     """
 
     messages = [
@@ -26,7 +26,6 @@ def run(llm_client, context, creative_brief, constraints_hint=""):
         {"role": "user", "content": user_prompt},
     ]
 
-    # This agent can either register the north star or open a risk if the input is unclear.
     tools = [
         utils.get_openai_tool_schema("register_north_star"),
         utils.get_openai_tool_schema("open_risk")
@@ -37,22 +36,14 @@ def run(llm_client, context, creative_brief, constraints_hint=""):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice="auto", # Let the model choose
+            tool_choice="auto",
         )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        if tool_calls:
-            tool_call = tool_calls[0]
-            tool_name = tool_call.function.name
-            print(f"   Creative Director LLM decided to call '{tool_name}'.")
-            function_args = json.loads(tool_call.function.arguments)
-            return tool_name, function_args
-        else:
-            llm_content = response_message.content
-            print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call a tool but did not.")
+        return utils.parse_llm_response(
+            response_message=response.choices[0].message,
+            primary_tool_name="register_north_star",
+            primary_tool_arg_keys=["purpose", "audience", "tone", "style_tokens"]
+        )
 
     except Exception as e:
         print(f"An error occurred during the Creative Director agent run: {e}")

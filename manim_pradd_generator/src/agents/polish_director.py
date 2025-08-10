@@ -36,21 +36,11 @@ def run(llm_client, context, polish_brief):
             tool_choice="required",
         )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        if tool_calls:
-            tool_call = tool_calls[0]
-            if tool_call.function.name == "add_polish":
-                print("   Polish Director LLM decided to call 'add_polish'.")
-                function_args = json.loads(tool_call.function.arguments)
-                return "add_polish", function_args
-            else:
-                raise ValueError(f"LLM called an unexpected tool: {tool_call.function.name}")
-        else:
-            llm_content = response_message.content
-            print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call 'add_polish' but did not.")
+        return utils.parse_llm_response(
+            response_message=response.choices[0].message,
+            primary_tool_name="add_polish",
+            primary_tool_arg_keys=["polish"]
+        )
 
     except Exception as e:
         print(f"An error occurred during the Polish Director agent run: {e}")

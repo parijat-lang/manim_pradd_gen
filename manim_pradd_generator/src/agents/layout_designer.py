@@ -20,7 +20,8 @@ def run(llm_client, context, layout_goals):
 
     Layout Goals: {layout_goals}
 
-    Call the `plan_geometry` tool with the results for this scene.
+    Call the `plan_geometry` tool with the results for this scene. If an object required
+    by a beat in this scene is not defined in the object catalog, open a risk instead.
     """
 
     messages = [
@@ -28,7 +29,6 @@ def run(llm_client, context, layout_goals):
         {"role": "user", "content": user_prompt},
     ]
 
-    # This agent can either plan geometry or open a risk if an object is missing.
     tools = [
         utils.get_openai_tool_schema("plan_geometry"),
         utils.get_openai_tool_schema("open_risk")
@@ -39,22 +39,14 @@ def run(llm_client, context, layout_goals):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice="auto", # Let the model choose
+            tool_choice="auto",
         )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        if tool_calls:
-            tool_call = tool_calls[0]
-            tool_name = tool_call.function.name
-            print(f"   Layout Designer LLM for scene {scene_id} decided to call '{tool_name}'.")
-            function_args = json.loads(tool_call.function.arguments)
-            return tool_name, function_args
-        else:
-            llm_content = response_message.content
-            print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call a tool but did not.")
+        return utils.parse_llm_response(
+            response_message=response.choices[0].message,
+            primary_tool_name="plan_geometry",
+            primary_tool_arg_keys=["frames"]
+        )
 
     except Exception as e:
         print(f"An error occurred during the Layout Designer agent run for scene {scene_id}: {e}")

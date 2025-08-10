@@ -18,7 +18,7 @@ def run(llm_client, context, narrative_outline):
     Narrative Outline: {narrative_outline}
 
     Please adhere to the North Star and target runtime defined in the context.
-    Call the `write_beats` tool with the results.
+    Call the `write_beats` tool with the results, or `open_risk` if the outline is ambiguous.
     """
 
     messages = [
@@ -26,7 +26,6 @@ def run(llm_client, context, narrative_outline):
         {"role": "user", "content": user_prompt},
     ]
 
-    # This agent can either write beats or open a risk if the input is ambiguous.
     tools = [
         utils.get_openai_tool_schema("write_beats"),
         utils.get_openai_tool_schema("open_risk")
@@ -37,22 +36,14 @@ def run(llm_client, context, narrative_outline):
             model="openai/gpt-oss-20b",
             messages=messages,
             tools=tools,
-            tool_choice="auto", # Let the model choose
+            tool_choice="auto",
         )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        if tool_calls:
-            tool_call = tool_calls[0]
-            tool_name = tool_call.function.name
-            print(f"   Story Planner LLM decided to call '{tool_name}'.")
-            function_args = json.loads(tool_call.function.arguments)
-            return tool_name, function_args
-        else:
-            llm_content = response_message.content
-            print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call a tool but did not.")
+        return utils.parse_llm_response(
+            response_message=response.choices[0].message,
+            primary_tool_name="write_beats",
+            primary_tool_arg_keys=["fps", "beats"]
+        )
 
     except Exception as e:
         print(f"An error occurred during the Story Planner agent run: {e}")

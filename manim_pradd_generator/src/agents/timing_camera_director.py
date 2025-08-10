@@ -38,21 +38,11 @@ def run(llm_client, context, timing_brief):
             tool_choice="required",
         )
 
-        response_message = response.choices[0].message
-        tool_calls = response_message.tool_calls
-
-        if tool_calls:
-            tool_call = tool_calls[0]
-            if tool_call.function.name == "compose_timeline":
-                print(f"   Timing & Camera Director LLM for scene {scene_id} decided to call 'compose_timeline'.")
-                function_args = json.loads(tool_call.function.arguments)
-                return "compose_timeline", function_args
-            else:
-                raise ValueError(f"LLM called an unexpected tool: {tool_call.function.name}")
-        else:
-            llm_content = response_message.content
-            print(f"LLM did not call a tool. Response content:\n{llm_content}")
-            raise ValueError("LLM was expected to call 'compose_timeline' but did not.")
+        return utils.parse_llm_response(
+            response_message=response.choices[0].message,
+            primary_tool_name="compose_timeline",
+            primary_tool_arg_keys=["timeline", "camera"]
+        )
 
     except Exception as e:
         print(f"An error occurred during the Timing & Camera Director agent run for scene {scene_id}: {e}")

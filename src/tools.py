@@ -171,7 +171,7 @@ def validate_corpus(strict: bool = True) -> str:
     """Placeholder for the validation tool."""
     # The actual logic will be in validator.py
     # This is just to satisfy the agent's tool-calling mechanism.
-    from validator import run_validation
+    from .validator import run_validation
     errors, warnings = run_validation(strict=strict)
     if not errors and not warnings:
         return "SUCCESS: Corpus validation passed."
@@ -182,6 +182,6 @@ def validate_corpus(strict: bool = True) -> str:
 def compile_pradd(include_appendices: bool = True) -> str:
     """Placeholder for the PRADD compilation tool."""
     # The actual logic will be in compiler.py
-    from compiler import run_compilation
+    from .compiler import run_compilation
     run_compilation(include_appendices=include_appendices)
     return "SUCCESS: PRADD.md has been compiled."

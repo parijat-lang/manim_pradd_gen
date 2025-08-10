@@ -76,19 +76,25 @@ def parse_llm_response(response_message, primary_tool_name, primary_tool_arg_key
     # Fallback case: The LLM might have returned raw JSON in the content.
     print("   LLM did not make a formal tool call. Checking content for raw JSON...")
     try:
-        # Clean up potential markdown code blocks
-        if llm_content.strip().startswith("```json"):
-            llm_content = llm_content.strip()[7:-3].strip()
+        # Find the start and end of the JSON object
+        start_index = llm_content.find('{')
+        end_index = llm_content.rfind('}')
 
-        potential_args = json.loads(llm_content)
+        if start_index != -1 and end_index != -1 and end_index > start_index:
+            json_str = llm_content[start_index:end_index+1]
+            potential_args = json.loads(json_str)
 
-        # Heuristic check: does this JSON look like our tool's arguments?
-        if isinstance(potential_args, dict) and all(key in potential_args for key in primary_tool_arg_keys):
-            print(f"   LLM returned raw JSON matching the structure for '{primary_tool_name}'.")
-            return primary_tool_name, potential_args
+            # Heuristic check: does this JSON look like our tool's arguments?
+            if isinstance(potential_args, dict) and all(key in potential_args for key in primary_tool_arg_keys):
+                print(f"   LLM returned raw JSON matching the structure for '{primary_tool_name}'.")
+                return primary_tool_name, potential_args
+            else:
+                print(f"LLM returned unexpected JSON content:\n{llm_content}")
+                raise ValueError("LLM returned JSON that does not match expected tool arguments.")
         else:
-            print(f"LLM returned unexpected JSON content:\n{llm_content}")
-            raise ValueError("LLM returned JSON that does not match expected tool arguments.")
+            # Could not find a JSON object in the content
+            raise json.JSONDecodeError("No JSON object found", llm_content, 0)
+
     except (json.JSONDecodeError, TypeError):
         # It's not valid JSON, it's just prose.
         print(f"LLM did not call a tool or return valid JSON. Response content:\n{llm_content}")

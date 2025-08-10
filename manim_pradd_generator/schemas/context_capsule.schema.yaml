@@ -1,0 +1,76 @@
+type: object
+required: [project, phase, corpus_snapshot, ids, policy, manim_profile]
+properties:
+  project:
+    type: object
+    required: [project_id, title, target_runtime_s, fps, version]
+    properties:
+      project_id: { type: string }
+      title: { type: string }
+      target_runtime_s: { type: number }
+      fps: { type: integer }
+      version: { type: string }      # PRADD workflow spec version
+  phase:
+    type: object
+    required: [name, attempt, scene_id]
+    properties:
+      name: { type: string }         # e.g., "layout", "animations"
+      attempt: { type: integer }
+      scene_id: { type: string, nullable: true }
+  corpus_snapshot:
+    type: object
+    required: [north_star, beats, objects, geometry, animations, relationships, timeline, camera, polish, rendering, glossary, risks, decisions]
+    properties:
+      north_star: { type: object }
+      beats: { type: object }
+      objects: { type: object }
+      geometry: { type: object }
+      animations: { type: object }
+      relationships: { type: object }
+      timeline: { type: object }
+      camera: { type: object }
+      polish: { type: object }
+      rendering: { type: object }
+      glossary: { type: object }
+      risks: { type: object }
+      decisions: { type: array, items: { type: object } }
+  ids:
+    type: object
+    required: [prefixes, counters]
+    properties:
+      prefixes:
+        type: object
+        properties:
+          beat: { type: string, default: "B-" }
+          scene: { type: string, default: "S-" }
+          object: { type: string, default: "O-" }
+          anim: { type: string, default: "A-" }
+          rel: { type: string, default: "R-" }
+          cam: { type: string, default: "C-" }
+      counters:
+        type: object
+        additionalProperties: { type: integer }
+  policy:
+    type: object
+    required: [style_token_policy, overlap_policy, complexity_budget]
+    properties:
+      style_token_policy: { type: string }  # "no raw colors outside North Star"
+      overlap_policy: { type: string }      # "same-target overlaps must be parallel-grouped"
+      complexity_budget:
+        type: object
+        properties:
+          max_parallel_per_beat: { type: integer, default: 6 }
+  manim_profile:
+    type: object
+    required: [manim_version, flavor, modes, primitives]
+    properties:
+      manim_version: { type: string }       # e.g., "0.19.0"
+      flavor: { type: string, enum: ["ManimCE"] }
+      modes: { type: array, items: { type: string, enum: ["cairo","opengl","2d","3d"] } }
+      primitives:
+        type: object
+        properties:
+          animations: { type: array, items: { type: string } }   # Create, Write, Transform, ...
+          composition: { type: array, items: { type: string } }  # AnimationGroup, LaggedStart, Succession
+          dynamics: { type: array, items: { type: string } }     # ValueTracker, always_redraw, add_updater
+          camera_actions: { type: array, items: { type: string } } # frame_move, frame_width, set_euler_angles

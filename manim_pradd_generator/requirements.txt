@@ -1,0 +1,3 @@
+lmstudio
+pyyaml
+jsonschema
